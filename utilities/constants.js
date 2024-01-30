@@ -2,13 +2,13 @@
 export const GRID_SIZE = 10; // Size of the grid (10x10)
 export const MINES_COUNT = 10; // Number of mines
 
-// Difficulty levels (optional, if you want to implement difficulty settings)
-export const EASY = { GRID_SIZE: 8, MINES_COUNT: 10 };
-export const MEDIUM = { GRID_SIZE: 12, MINES_COUNT: 20 };
-export const HARD = { GRID_SIZE: 16, MINES_COUNT: 30 };
+// Difficulty levels 
+export const EASY = { GRID_SIZE: 10, MINES_COUNT: 10 };
+export const MEDIUM = { GRID_SIZE: 10, MINES_COUNT: 25 };
+export const HARD = { GRID_SIZE: 10, MINES_COUNT: 55 };
 
 // Cell appearance
-export const CELL_SIZE = 40; // Size of each cell in pixels
+export const CELL_SIZE = 20; // Size of each cell in pixels
 export const CELL_COLOR = '#f0f0f0'; // Default cell color
 export const REVEALED_CELL_COLOR = '#bdbdbd'; // Color of a revealed cell
 export const FLAGGED_CELL_COLOR = '#ffcc00'; // Color of a flagged cell

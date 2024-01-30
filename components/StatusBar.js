@@ -1,27 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const StatusBar = ({ mineCount, gameActive }) => {
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
-
-  useEffect(() => {
-    let interval;
-
-    // Start or reset the timer based on gameActive status
-    if (gameActive) {
-      setSecondsElapsed(0); // Reset the timer when a new game starts
-      interval = setInterval(() => {
-        setSecondsElapsed(prevSeconds => prevSeconds + 1);
-      }, 1000);
-    }
-
-    // Cleanup interval on component unmount or game end
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [gameActive]); // gameActive should control the timer start/stop
+const StatusBar = ({ mineCount, timeElapsed }) => {
 
   // Format time to display as MM:SS
   const formatTime = (time) => {
@@ -32,8 +12,10 @@ const StatusBar = ({ mineCount, gameActive }) => {
 
   return (
     <View style={styles.statusBar}>
+      {/* Remove the nested Text component for Mines */}
       <Text>Mines: {mineCount}</Text>
-      <Text>Time: {formatTime(secondsElapsed)}</Text>
+      {/* Time is already correctly formatted */}
+      <Text>Time: {formatTime(timeElapsed)}</Text>
     </View>
   );
 };

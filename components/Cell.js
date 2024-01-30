@@ -4,7 +4,7 @@ import { NUMBER_COLORS } from '../utilities/constants'; // Assuming you have col
 
 // Dynamic cell size calculation
 const screenWidth = Dimensions.get('window').width;
-const gridWidth = screenWidth - 20; // Subtract some padding for the grid
+const gridWidth = screenWidth - 10; // Subtract some padding for the grid
 const numCellsHorizontal = 10; // Number of cells horizontally
 const cellSize = gridWidth / numCellsHorizontal; // Width for each cell
 
