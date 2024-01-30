@@ -9,11 +9,15 @@ export const initializeGrid = (rows, cols, mines) => {
     while (minesPlaced < mines) {
       const row = Math.floor(Math.random() * rows);
       const col = Math.floor(Math.random() * cols);
-  
+
+      // if cell is not already a mine, place a mine
       if (!grid[row][col].isMine) {
         grid[row][col].isMine = true;
-        minesPlaced++;
+        minesPlaced = minesPlaced + 1;
+        console.log("Mine placed!");
       }
+
+      
     }
   
     // Calculate adjacent mines for each cell
