@@ -1,5 +1,5 @@
 // Game grid settings
-export const GRID_SIZE = 10; // Size of the grid (10x10)
+export const GRID_SIZE = 14; // Size of the grid (10x10)
 export const MINES_COUNT = 10; // Number of mines
 
 // Difficulty levels 
