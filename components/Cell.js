@@ -1,8 +1,14 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { TouchableOpacity, StyleSheet, Text, Dimensions } from 'react-native';
 import { NUMBER_COLORS } from '../utilities/constants'; // Assuming you have color definitions for numbers
 
-const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPress },cellSize) => {
+// Dynamic cell size calculation
+const screenWidth = Dimensions.get('window').width;
+const gridWidth = screenWidth - 10; // Subtract some padding for the grid
+const numCellsHorizontal = 10; // Number of cells horizontally
+const cellSize = gridWidth / numCellsHorizontal; // Width for each cell
+
+const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPress }) => {
   const cellStyle = [
     styles.cell,
     isRevealed ? styles.revealed : styles.hidden,
@@ -42,8 +48,8 @@ const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPre
 
 const styles = StyleSheet.create({
   cell: {
-    width: {cellSize},
-    height: {cellSize},
+    width: cellSize,
+    height: cellSize,
     borderWidth: 1,
     borderColor: '#bdbdbd',
     alignItems: 'center',
