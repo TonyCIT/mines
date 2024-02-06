@@ -7,7 +7,7 @@ import { GRID_SIZE, MINES_COUNT, EASY, MEDIUM, HARD } from './utilities/constant
 
 const App = () => {
   const [currentDifficulty, setCurrentDifficulty] = useState(EASY);
-  const [gridData, setGridData] = useState(() => initializeGrid(GRID_SIZE, currentDifficulty.GRID_SIZE, currentDifficulty.MINES_COUNT));
+  const [gridData, setGridData] = useState(() => initializeGrid(currentDifficulty.GRID_X, currentDifficulty.GRID_Y, currentDifficulty.MINES_COUNT));
   const [gameOver, setGameOver] = useState(false);
   const [mineCount, setMineCount] = useState(currentDifficulty.MINES_COUNT); // Initialize mine count based on difficulty
   const [gameStarted, setGameStarted] = useState(false);
@@ -78,7 +78,7 @@ const App = () => {
   };
 
   const resetGame = (newMineCount) => {
-    setGridData(initializeGrid(GRID_SIZE, currentDifficulty.GRID_SIZE, newMineCount)); // Use the new mine count
+    setGridData(initializeGrid(currentDifficulty.GRID_X, currentDifficulty.GRID_Y, newMineCount)); // Use the new mine count
     setGameOver(false);
     setGameStarted(false);
     setTimeElapsed(0);
@@ -111,7 +111,8 @@ const App = () => {
         </TouchableOpacity>
       </View>
       <Grid 
-        gridData={gridData} 
+        gridData={gridData}
+        tableWidth={currentDifficulty.GRID_Y}
         onCellPress={handleCellPress}
         onCellLongPress={handleCellLongPress} 
       />

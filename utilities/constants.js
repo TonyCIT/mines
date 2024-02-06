@@ -1,11 +1,12 @@
 // Game grid settings
-export const GRID_SIZE = 14; // Size of the grid (10x10)
-export const MINES_COUNT = 10; // Number of mines
+//export const GRID_SIZE = 14; // Size of the grid (10x10)
+//export const MINES_COUNT = 10; // Number of mines
 
 // Difficulty levels 
-export const EASY = { GRID_SIZE: 10, MINES_COUNT: 10 };
-export const MEDIUM = { GRID_SIZE: 10, MINES_COUNT: 25 };
-export const HARD = { GRID_SIZE: 10, MINES_COUNT: 55 };
+export const EASY = { GRID_X: 10, GRID_Y: 10, MINES_COUNT: 10 };
+export const MEDIUM = { GRID_X: 13, GRID_Y: 13, MINES_COUNT: 25 };
+export const HARD = { GRID_X: 15, GRID_Y: 15, MINES_COUNT: 55 };
+
 
 // Cell appearance
 export const CELL_SIZE = 20; // Size of each cell in pixels
