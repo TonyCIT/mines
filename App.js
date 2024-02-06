@@ -3,7 +3,7 @@ import { StyleSheet, View, Button, Text, Alert, TouchableOpacity } from 'react-n
 import Grid from './components/Grid';
 import StatusBar from './components/StatusBar';
 import { initializeGrid, revealCell, toggleFlag } from './utilities/gameLogic';
-import { GRID_SIZE, MINES_COUNT, EASY, MEDIUM, HARD } from './utilities/constants';
+import { LUCKY_PUNK, EASY, MEDIUM, HARD } from './utilities/constants';
 
 const App = () => {
   const [currentDifficulty, setCurrentDifficulty] = useState(EASY);
@@ -12,9 +12,27 @@ const App = () => {
   const [mineCount, setMineCount] = useState(currentDifficulty.MINES_COUNT); // Initialize mine count based on difficulty
   const [gameStarted, setGameStarted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  // feeling lucky punk
+  const [isLuckyPunkMode, setIsLuckyPunkMode] = useState(false);
+  const [score, setScore] = useState(0);
+
+  const startLuckyPunkMode = () => {
+    setIsLuckyPunkMode(true);
+    setGridData(initializeGrid(LUCKY_PUNK.GRID_SIZE, LUCKY_PUNK.GRID_SIZE, LUCKY_PUNK.MINES_COUNT, true));
+    // Reset the score and other relevant states
+    setScore(0);
+    setGameOver(false);
+    setGameStarted(false);
+    setTimeElapsed(0);
+  };
+
+  // handles stop and calculation
+  const handleStopPress = () => {
+    const finalScore = timeElapsed + score;
+    Alert.alert("Stopped", `Your final score is: ${finalScore}`, [{ text: "OK" }]);
+    setIsLuckyPunkMode(false);
+  };
   
-
-
   // Effect to handle the timer
   useEffect(() => {
     let intervalId;
@@ -45,6 +63,27 @@ const App = () => {
   };
 
   const handleCellPress = (rowIndex, cellIndex) => {
+    // Only allow cell press if it's the 'Feeling Lucky, Punk' mode and the game hasn't started yet
+    if (isLuckyPunkMode) {
+      if (!gameStarted) {
+      setGameStarted(true); // Start the game
+      const { grid, gameOver: isGameOver } = revealCell(gridData, rowIndex, cellIndex, true); // true to indicate no hints
+      setGridData(grid);
+      if (isGameOver) {
+        // If a mine is hit, game over
+        Alert.alert("Boom!", "You hit a mine!", [{ text: "OK" }]);
+        setIsLuckyPunkMode(false); // Exit 'Feeling Lucky, Punk' mode
+        setGameOver(true); // Set game over
+      } else {
+        // If a safe cell is revealed, increment the score
+        setScore((prevScore) => prevScore + 2); 
+        setIsLuckyPunkMode(false); // Player can only uncover one cell, so end the mode
+        setGameOver(false); // End the game - if true game ends on first click
+      }
+    }
+    } else {
+
+    }
     if (!gameStarted) {
       setGameStarted(true); // Start the game on the first cell press
     }
@@ -74,15 +113,22 @@ const App = () => {
 
   const handleDifficultyChange = (difficulty) => {
     setCurrentDifficulty(difficulty);
-    resetGame(difficulty.MINES_COUNT); // Reset the game when changing difficulty and update mine count
-  };
-
-  const resetGame = (newMineCount) => {
-    setGridData(initializeGrid(currentDifficulty.GRID_X, currentDifficulty.GRID_Y, newMineCount)); // Use the new mine count
+    // Immediately create a new grid based on the new difficulty
+    setGridData(initializeGrid(difficulty.GRID_X, difficulty.GRID_Y, difficulty.MINES_COUNT));
     setGameOver(false);
     setGameStarted(false);
     setTimeElapsed(0);
-    setMineCount(newMineCount); // Update mine count based on the new difficulty
+    setMineCount(difficulty.MINES_COUNT);
+  };
+  
+
+  const resetGame = (newMineCount) => {
+    // Use a functional update to ensure the state is updated based on the previous state
+    setGridData(() => initializeGrid(currentDifficulty.GRID_X, currentDifficulty.GRID_Y, newMineCount));
+    setGameOver(false);
+    setGameStarted(false);
+    setTimeElapsed(0);
+    setMineCount(newMineCount);
   };
   
 
@@ -107,8 +153,14 @@ const App = () => {
           style={[styles.difficultyButton, currentDifficulty === HARD && styles.selectedDifficulty]}
           onPress={() => handleDifficultyChange(HARD)}
         >
-          <Text style={styles.difficultyText}>Hard</Text>
+          <Text style={styles.difficultyText}>Hard</Text>          
         </TouchableOpacity>
+        {!isLuckyPunkMode && (
+            <Button title="Feeling Lucky, Punk" onPress={startLuckyPunkMode} />
+          )}
+          {isLuckyPunkMode && (
+            <Button title="Stop" onPress={handleStopPress} />
+          )}
       </View>
       <Grid 
         gridData={gridData}

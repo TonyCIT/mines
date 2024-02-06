@@ -1,19 +1,18 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Text, Dimensions } from 'react-native';
+import { TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { NUMBER_COLORS } from '../utilities/constants'; // Assuming you have color definitions for numbers
 
-// Dynamic cell size calculation
-const screenWidth = Dimensions.get('window').width;
-const gridWidth = screenWidth - 10; // Subtract some padding for the grid
-const numCellsHorizontal = 10; // Number of cells horizontally
-const cellSize = gridWidth / numCellsHorizontal; // Width for each cell
-
-const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPress }) => {
+const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPress, cellSize }) => {
   const cellStyle = [
     styles.cell,
     isRevealed ? styles.revealed : styles.hidden,
     isFlagged && styles.flagged,
   ];
+
+  const dynamicCellStyle = {
+    width: cellSize,
+    height: cellSize,
+  };
 
   const renderCellContent = () => {
     if (isFlagged) {
@@ -36,7 +35,7 @@ const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPre
 
   return (
     <TouchableOpacity
-      style={cellStyle}
+      style={[styles.cell, dynamicCellStyle, isRevealed ? styles.revealed : styles.hidden, isFlagged && styles.flagged]}
       onPress={onPress}
       onLongPress={onLongPress}
       disabled={isRevealed}
@@ -47,13 +46,20 @@ const Cell = ({ isMine, isRevealed, isFlagged, adjacentMines, onPress, onLongPre
 };
 
 const styles = StyleSheet.create({
-  cell: {
-    width: cellSize,
-    height: cellSize,
-    borderWidth: 1,
+  cell: { 
+    borderWidth: 0.5,
     borderColor: '#bdbdbd',
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderColor: 'grey',
+  },
+  firstCellInRow: {
+    borderLeftWidth: StyleSheet.hairlineWidth,
+  },
+  firstCellInColumn: {
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   hidden: {
     backgroundColor: '#f0f0f0',

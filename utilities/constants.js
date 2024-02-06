@@ -4,12 +4,15 @@
 
 // Difficulty levels 
 export const EASY = { GRID_X: 10, GRID_Y: 10, MINES_COUNT: 10 };
-export const MEDIUM = { GRID_X: 13, GRID_Y: 13, MINES_COUNT: 25 };
-export const HARD = { GRID_X: 15, GRID_Y: 15, MINES_COUNT: 55 };
+export const MEDIUM = { GRID_X: 15, GRID_Y: 13, MINES_COUNT: 25 };
+export const HARD = { GRID_X: 20, GRID_Y: 14, MINES_COUNT: 55 };
+// feeling lucky punk
+export const LUCKY_PUNK = { GRID_SIZE: 5, MINES_COUNT: 3 };
+
 
 
 // Cell appearance
-export const CELL_SIZE = 20; // Size of each cell in pixels
+// export const CELL_SIZE = 20; // Size of each cell in pixels
 export const CELL_COLOR = '#f0f0f0'; // Default cell color
 export const REVEALED_CELL_COLOR = '#bdbdbd'; // Color of a revealed cell
 export const FLAGGED_CELL_COLOR = '#ffcc00'; // Color of a flagged cell
