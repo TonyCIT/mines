@@ -1,0 +1,64 @@
+export const revealCell = (grid, row, col, noHints = false) => {
+  const newGrid = grid.map(row => row.slice());
+  
+  // If in Feeling Lucky Punk mode or if hints are not to be used, reveal only the clicked cell
+  if (noHints) {
+    if (!newGrid[row][col].isRevealed) {
+      newGrid[row][col].isRevealed = true;
+      if (newGrid[row][col].isMine) {
+        return { grid: newGrid, gameOver: true };
+      }
+    }
+    return { grid: newGrid, gameOver: false };
+  } else {
+    // Use the revealCellHelper for recursive revealing in normal mode
+    const result = revealCellHelper(newGrid, row, col);
+    return {
+      grid: result.grid,
+      gameOver: result.gameOver
+    };
+  }
+};
+
+ const handleCellPress = (rowIndex, cellIndex) => {
+    // Start the game on the first cell press if it hasn't started yet
+    if (!gameStarted) {
+      setGameStarted(true);
+    }
+  
+    // Do not proceed if the game is already over
+    if (gameOver) return;
+  
+    const cell = gridData[rowIndex][cellIndex];
+    // Only proceed if the cell hasn't been revealed yet
+    if (!cell.isRevealed) {
+      const { grid, gameOver: isGameOver } = revealCell(gridData, rowIndex, cellIndex, isLuckyPunkMode);
+  
+      if (isLuckyPunkMode) {
+        // Increment score only for newly revealed cells in 'Feeling Lucky, Punk' mode
+        setScore((prevScore) => prevScore + 2); 
+        // Update the grid data with the changes
+        setGridData(grid);
+        if (isGameOver) {
+          // If a mine is hit, indicate game over
+          Alert.alert("Boom!", "You hit a mine!", [{ text: "OK" }]);
+          setGameOver(true);
+          setGameStarted(false);
+        }
+      } else {
+        // For the normal game mode, just update the grid data without scoring
+        setGridData(grid);
+        if (isGameOver) {
+          Alert.alert("Game Over", "You hit a mine!", [{ text: "OK" }]);
+          setGameOver(true);
+        }
+      }
+    }
+  };
+
+
+{/* Always show the "Reset Game" button only in normal mode */}
+      {!isLuckyPunkMode && (
+          <Button title="Reset Game" onPress={() => resetGame(currentDifficulty.MINES_COUNT)} />
+        )}
+

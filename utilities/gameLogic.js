@@ -54,7 +54,7 @@ export const revealCell = (grid, row, col, noHints = false) => {
   const noRecursiveReveal = noHints;
   
   // Directly reveal the cell without checking for adjacent mines if noHints is true
-  if (noHints) {
+  if (noRecursiveReveal) {
     if (!newGrid[row][col].isRevealed) {
       newGrid[row][col].isRevealed = true;
       // If the cell is a mine, then it's game over
