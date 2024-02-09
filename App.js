@@ -30,9 +30,9 @@ const App = () => {
    // handles stop and calculation
    const handleStopPress = () => {
     const finalScore = score - timeElapsed;
-    
+    Alert.alert("Stopped", `Your final score is: ${finalScore}`, [{ text: "OK" }]);
     setScore(0);
-    setIsLuckyPunkMode(false); // if true reset works okay, if false reset sends you to normal mode
+    setIsLuckyPunkMode(true); // if true reset works okay, if false reset sends you to normal mode
     setGameOver(true);
     setGameStarted(false);
   };
@@ -195,7 +195,7 @@ const checkGameCompletion = () => {
       {gameOver && <Text style={styles.gameOverText}>Game Over</Text>}
       {/* Show Stop only in Lucky Punk Mode */}
       {isLuckyPunkMode && (
-        <Button title="Reset" onPress={handleStopPress} />
+        <Button title="Stop/Reset" onPress={handleStopPress} />
       )}
       
        {/* Conditional rendering of instructions */}
