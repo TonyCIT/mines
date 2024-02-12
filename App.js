@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Button, Text, Alert, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Button, Text, Alert, TouchableOpacity, TextInput } from 'react-native';
 import Grid from './components/Grid';
 import StatusBar from './components/StatusBar';
 import { initializeGrid, revealCell, toggleFlag } from './utilities/gameLogic';
@@ -12,16 +12,27 @@ const App = () => {
   const [mineCount, setMineCount] = useState(currentDifficulty.MINES_COUNT);
   const [gameStarted, setGameStarted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  // feeling lucky punk
   const [isLuckyPunkMode, setIsLuckyPunkMode] = useState(false);
   const [score, setScore] = useState(0);
-  const [stopButtonDisabled, setStopButtonDisabled] = useState(true); 
-  // score
-  const [scores, setScores] = useState([]);
+  const [stopButtonDisabled, setStopButtonDisabled] = useState(true);
+  const [luckyScores, setLuckyScores] = useState([]);
+  const [normalScores, setNormalScores] = useState([]);
+  const [showInputName, setShowInputName] = useState(false);
+  const [top3Name, setTop3Name] = useState('');
 
+  const addScore = (newScore, playerName, isLuckyMode) => {
+    const modeScores = isLuckyMode ? [...luckyScores] : [...normalScores];
+    modeScores.push({ score: newScore, name: playerName });
+    modeScores.sort((a, b) => b.score - a.score);
+    const top3Scores = modeScores.slice(0, 3);
+    if (isLuckyMode) {
+      setLuckyScores(top3Scores);
+    } else {
+      setNormalScores(top3Scores);
+    }
+  };
 
   useEffect(() => {
-    // Disable stop button if lucky mode is enabled but no cell has been pressed yet
     if (isLuckyPunkMode && !gameStarted) {
       setStopButtonDisabled(true);
     } else {
@@ -35,19 +46,19 @@ const App = () => {
     setMineCount(LUCKY_PUNK.MINES_COUNT);
     setScore(0);
     setGameOver(false);
-    setGameStarted(false); // Game hasn't really started until a cell is pressed
+    setGameStarted(false);
     setTimeElapsed(0);
     setCurrentDifficulty(LUCKY_PUNK);
-    setStopButtonDisabled(true); // Disable stop button until a cell is pressed
+    setStopButtonDisabled(true);
   };
 
   const handleStopPress = () => {
     handleEndGameAlert(true);
-    setIsLuckyPunkMode(false); // Exit Lucky Punk mode
+    setIsLuckyPunkMode(false);
     setScore(0);
-    setGameOver(true); // Set game over to true
+    setGameOver(true);
     setGameStarted(false);
-    setStopButtonDisabled(true); // Disable stop button since the game has stopped
+    setStopButtonDisabled(true);
   };
 
   useEffect(() => {
@@ -64,69 +75,98 @@ const App = () => {
     if (win) {
       let finalScore;
       if (isLuckyPunkMode) {
-        finalScore = score - timeElapsed;
+        finalScore = score - timeElapsed + 5; // Adjust final score for lucky punk mode
       } else {
         finalScore = Math.abs(timeElapsed);
       }
-      finalScore = Math.abs(finalScore); // Convert negative score to positive
+      finalScore = Math.abs(finalScore);
   
-      setGameOver(true); // Set game over before resetting to prevent further actions
+      setGameOver(true);
+      addScore(finalScore, top3Name, isLuckyPunkMode); // Save the score when the game ends
+  
       if (isLuckyPunkMode) {
-        Alert.alert(
-          "Congratulations",
-          `You've won the game! Your final score is: ${finalScore + 5}`,
-          [
-            { text: "OK", onPress: () => startLuckyPunkMode() }
-          ]
-        );
+        if (luckyScores.find(entry => entry.score === finalScore)) {
+          Alert.alert(
+            "Congratulations",
+            `You've won the game! Your final score is: ${finalScore}. Please enter your name:`,
+            [
+              {
+                text: "Save",
+                onPress: () => {
+                  setShowInputName(true);
+                }
+              },
+              { text: "OK", onPress: () => startLuckyPunkMode() }
+            ]
+          );
+        } else {
+          Alert.alert(
+            "Congratulations",
+            `You've won the game! Your final score is: ${finalScore}`,
+            [
+              { text: "OK", onPress: () => startLuckyPunkMode() }
+            ]
+          );
+        }
       } else {
-        Alert.alert(
-          "Congratulations",
-          `You've won the game! Your final score is: ${finalScore}`,
-          [
-            { text: "OK" }
-          ]
-        );
+        if (normalScores.find(entry => entry.score === finalScore)) {
+          Alert.alert(
+            "Congratulations",
+            `You've won the game! Your final score is: ${finalScore}. Please enter your name:`,
+            [
+              {
+                text: "Save",
+                onPress: () => {
+                  setShowInputName(true);
+                }
+              },
+              { text: "OK" }
+            ]
+          );
+        } else {
+          Alert.alert(
+            "Congratulations",
+            `You've won the game! Your final score is: ${finalScore}`,
+            [
+              { text: "OK" }
+            ]
+          );
+        }
       }
     } else {
-      setScore(0); // Reset score because a mine was hit
-      setGameOver(true); // Set game over before resetting to prevent further actions
+      setScore(0);
+      setGameOver(true);
       Alert.alert("Boom!", "You hit a mine! Score reset to 0", [{ text: "OK" }]);
     }
   };
-  
 
   const checkGameCompletion = () => {
     if (isLuckyPunkMode) {
-      // In "Feeling Lucky, Punk" mode, completion might be based solely on revealing non-mine cells.
       for (let row of gridData) {
         for (let cell of row) {
-          // If there's a non-mine cell that hasn't been revealed, the game is not complete.
           if (!cell.isMine && !cell.isRevealed) {
-            return false; // Game is not complete, as there are still safe cells to reveal.
+            return false;
           }
         }
       }
-      return true; // All non-mine cells have been revealed, game is complete.
+      return true;
     } else {
-      // For normal mode, you might still check both conditions: mines flagged and non-mine cells revealed.
-      let mineCellsFlagged = true; // Assume all mines are correctly flagged initially
-      let nonMineCellsRevealed = true; // Assume all non-mine cells are revealed initially
-  
+      let mineCellsFlagged = true;
+      let nonMineCellsRevealed = true;
+
       for (let row of gridData) {
         for (let cell of row) {
           if (cell.isMine && !cell.isFlagged) {
-            mineCellsFlagged = false; // A mine is not flagged.
+            mineCellsFlagged = false;
           }
           if (!cell.isMine && !cell.isRevealed) {
-            nonMineCellsRevealed = false; // A non-mine cell is not revealed.
+            nonMineCellsRevealed = false;
           }
         }
       }
-      return mineCellsFlagged && nonMineCellsRevealed; // Both conditions must be true for the game to be complete.
+      return mineCellsFlagged && nonMineCellsRevealed;
     }
   };
-  
 
   const handleCellPress = (rowIndex, cellIndex) => {
     if (isLuckyPunkMode) {
@@ -141,7 +181,7 @@ const App = () => {
         setIsLuckyPunkMode(false);
 
       } else {
-        if (!gameOver) { // Ensure the game is not over before updating the score
+        if (!gameOver) {
           setScore((prevScore) => prevScore + 5);
         }
         if (checkGameCompletion()) {
@@ -164,8 +204,7 @@ const App = () => {
       }
     }
   };
-  
- 
+
   const handleCellLongPress = (rowIndex, cellIndex) => {
     if (gameOver) return;
     const { grid, flagAdded } = toggleFlag(gridData, rowIndex, cellIndex);
@@ -179,7 +218,6 @@ const App = () => {
 
   const handleDifficultyChange = (difficulty) => {
     setCurrentDifficulty(difficulty);
-    // resetGame(); // Reset the game parameters
     setGridData(initializeGrid(difficulty.GRID_X, difficulty.GRID_Y, difficulty.MINES_COUNT));
     setIsLuckyPunkMode(false);
     setGameOver(false);
@@ -211,7 +249,6 @@ const App = () => {
         >
           <Text style={styles.difficultyText}>Hard</Text>
         </TouchableOpacity>
-        {/* Toggle Feeling Lucky, Punk Mode */}
         {!isLuckyPunkMode && (
           <Button title="Feeling Lucky, Punk" onPress={startLuckyPunkMode} />
         )}
@@ -226,8 +263,27 @@ const App = () => {
         tableWidth={currentDifficulty.GRID_Y}
         onCellPress={handleCellPress}
         onCellLongPress={handleCellLongPress}
-        gameOver={gameOver} // Pass gameOver state to Grid component
+        gameOver={gameOver}
       />
+      {showInputName && (
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your name"
+          onChangeText={text => setTop3Name(text)}
+        />
+      )}
+      <View>
+        <Text>Top 3 Scores:</Text>
+        {isLuckyPunkMode ? (
+          luckyScores.map((scoreEntry, index) => (
+            <Text key={index}>{`Score: ${scoreEntry.score} - Name: ${scoreEntry.name}`}</Text>
+          ))
+        ) : (
+          normalScores.map((scoreEntry, index) => (
+            <Text key={index}>{`Score: ${scoreEntry.score} - Name: ${scoreEntry.name}`}</Text>
+          ))
+        )}
+      </View>
       {isLuckyPunkMode ? (
         <View style={styles.instructions}>
           <Text style={styles.instructionText1}>Feeling Lucky, Punk Mode:</Text>
@@ -293,6 +349,15 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
   },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 5,
+    width: '80%',
+  },
 });
 
 export default App;
+
