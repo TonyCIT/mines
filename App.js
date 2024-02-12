@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Button, Text, Alert, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Button, Text, Alert, TouchableOpacity } from 'react-native';
 import Grid from './components/Grid';
 import StatusBar from './components/StatusBar';
 import { initializeGrid, revealCell, toggleFlag } from './utilities/gameLogic';
 import { LUCKY_PUNK, EASY, MEDIUM, HARD } from './utilities/constants';
+import NameInputModal from './components/NameInputModal';
 
 const App = () => {
   const [currentDifficulty, setCurrentDifficulty] = useState(EASY);
@@ -17,8 +18,10 @@ const App = () => {
   const [stopButtonDisabled, setStopButtonDisabled] = useState(true);
   const [luckyScores, setLuckyScores] = useState([]);
   const [normalScores, setNormalScores] = useState([]);
-  const [showInputName, setShowInputName] = useState(false);
   const [top3Name, setTop3Name] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [playerName, setPlayerName] = useState('');
 
   const addScore = (newScore, playerName, isLuckyMode) => {
     const modeScores = isLuckyMode ? [...luckyScores] : [...normalScores];
@@ -49,6 +52,7 @@ const App = () => {
     setGameStarted(false);
     setTimeElapsed(0);
     setCurrentDifficulty(LUCKY_PUNK);
+    setModalVisible(true);
     setStopButtonDisabled(true);
   };
 
@@ -75,7 +79,7 @@ const App = () => {
     if (win) {
       let finalScore;
       if (isLuckyPunkMode) {
-        finalScore = score - timeElapsed + 5; // Adjust final score for lucky punk mode
+        finalScore = score - timeElapsed; // Adjust final score for lucky punk mode
       } else {
         finalScore = Math.abs(timeElapsed);
       }
@@ -86,19 +90,7 @@ const App = () => {
   
       if (isLuckyPunkMode) {
         if (luckyScores.find(entry => entry.score === finalScore)) {
-          Alert.alert(
-            "Congratulations",
-            `You've won the game! Your final score is: ${finalScore}. Please enter your name:`,
-            [
-              {
-                text: "Save",
-                onPress: () => {
-                  setShowInputName(true);
-                }
-              },
-              { text: "OK", onPress: () => startLuckyPunkMode() }
-            ]
-          );
+          setNameModalVisible(true);
         } else {
           Alert.alert(
             "Congratulations",
@@ -110,19 +102,7 @@ const App = () => {
         }
       } else {
         if (normalScores.find(entry => entry.score === finalScore)) {
-          Alert.alert(
-            "Congratulations",
-            `You've won the game! Your final score is: ${finalScore}. Please enter your name:`,
-            [
-              {
-                text: "Save",
-                onPress: () => {
-                  setShowInputName(true);
-                }
-              },
-              { text: "OK" }
-            ]
-          );
+          setNameModalVisible(true);
         } else {
           Alert.alert(
             "Congratulations",
@@ -139,6 +119,7 @@ const App = () => {
       Alert.alert("Boom!", "You hit a mine! Score reset to 0", [{ text: "OK" }]);
     }
   };
+  
 
   const checkGameCompletion = () => {
     if (isLuckyPunkMode) {
@@ -227,6 +208,11 @@ const App = () => {
     setScore(0);
   };
 
+  const handleNameSave = (name) => {
+    setTop3Name(name);
+    setNameModalVisible(false);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar mineCount={mineCount} timeElapsed={timeElapsed} />
@@ -265,13 +251,10 @@ const App = () => {
         onCellLongPress={handleCellLongPress}
         gameOver={gameOver}
       />
-      {showInputName && (
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your name"
-          onChangeText={text => setTop3Name(text)}
-        />
-      )}
+      <NameInputModal 
+        visible={nameModalVisible} 
+        onSave={handleNameSave} 
+      />
       <View>
         <Text>Top 3 Scores:</Text>
         {isLuckyPunkMode ? (
@@ -349,15 +332,6 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 10,
-    padding: 5,
-    width: '80%',
-  },
 });
 
 export default App;
-
