@@ -61,7 +61,7 @@ export const revealCell = (grid, row, col, noHints = false) => {
       {!isLuckyPunkMode && (
           <Button title="Reset Game" onPress={() => resetGame(currentDifficulty.MINES_COUNT)} />
         )}
-========================================================================================
+        
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Button, Text, Alert, TouchableOpacity } from 'react-native';
 import Grid from './components/Grid';

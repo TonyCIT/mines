@@ -9,157 +9,188 @@ const App = () => {
   const [currentDifficulty, setCurrentDifficulty] = useState(EASY);
   const [gridData, setGridData] = useState(() => initializeGrid(currentDifficulty.GRID_X, currentDifficulty.GRID_Y, currentDifficulty.MINES_COUNT));
   const [gameOver, setGameOver] = useState(false);
-  const [mineCount, setMineCount] = useState(currentDifficulty.MINES_COUNT); // Initialize mine count based on difficulty
+  const [mineCount, setMineCount] = useState(currentDifficulty.MINES_COUNT);
   const [gameStarted, setGameStarted] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   // feeling lucky punk
   const [isLuckyPunkMode, setIsLuckyPunkMode] = useState(false);
   const [score, setScore] = useState(0);
+  const [stopButtonDisabled, setStopButtonDisabled] = useState(true); 
+  // score
+  const [scores, setScores] = useState([]);
+
+
+  useEffect(() => {
+    // Disable stop button if lucky mode is enabled but no cell has been pressed yet
+    if (isLuckyPunkMode && !gameStarted) {
+      setStopButtonDisabled(true);
+    } else {
+      setStopButtonDisabled(false);
+    }
+  }, [isLuckyPunkMode, gameStarted]);
 
   const startLuckyPunkMode = () => {
     setIsLuckyPunkMode(true);
     setGridData(initializeGrid(LUCKY_PUNK.GRID_SIZE, LUCKY_PUNK.GRID_SIZE, LUCKY_PUNK.MINES_COUNT, true));
     setMineCount(LUCKY_PUNK.MINES_COUNT);
-    // Reset the score and other relevant states
     setScore(0);
     setGameOver(false);
-    setGameStarted(false); // set this to true to start the game imediately
+    setGameStarted(false); // Game hasn't really started until a cell is pressed
     setTimeElapsed(0);
+    setCurrentDifficulty(LUCKY_PUNK);
+    setStopButtonDisabled(true); // Disable stop button until a cell is pressed
   };
 
-   // handles stop and calculation
-   const handleStopPress = () => {
-    const finalScore = score - timeElapsed;
-    Alert.alert("Stopped", `Your final score is: ${finalScore}`, [{ text: "OK" }]);
+  const handleStopPress = () => {
+    handleEndGameAlert(true);
+    setIsLuckyPunkMode(false); // Exit Lucky Punk mode
     setScore(0);
-    setIsLuckyPunkMode(true); // if true reset works okay, if false reset sends you to normal mode
-    setGameOver(true);
+    setGameOver(true); // Set game over to true
     setGameStarted(false);
+    setStopButtonDisabled(true); // Disable stop button since the game has stopped
+  };
+
+  useEffect(() => {
+    let intervalId;
+    if (gameStarted && !gameOver) {
+      intervalId = setInterval(() => {
+        setTimeElapsed((prevTime) => prevTime + 1);
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [gameStarted, gameOver]);
+
+  const handleEndGameAlert = (win) => {
+    if (win) {
+      let finalScore;
+      if (isLuckyPunkMode) {
+        finalScore = score - timeElapsed;
+      } else {
+        finalScore = Math.abs(timeElapsed);
+      }
+      finalScore = Math.abs(finalScore); // Convert negative score to positive
+  
+      setGameOver(true); // Set game over before resetting to prevent further actions
+      if (isLuckyPunkMode) {
+        Alert.alert(
+          "Congratulations",
+          `You've won the game! Your final score is: ${finalScore + 5}`,
+          [
+            { text: "OK", onPress: () => startLuckyPunkMode() }
+          ]
+        );
+      } else {
+        Alert.alert(
+          "Congratulations",
+          `You've won the game! Your final score is: ${finalScore}`,
+          [
+            { text: "OK" }
+          ]
+        );
+      }
+    } else {
+      setScore(0); // Reset score because a mine was hit
+      setGameOver(true); // Set game over before resetting to prevent further actions
+      Alert.alert("Boom!", "You hit a mine! Score reset to 0", [{ text: "OK" }]);
+    }
   };
   
-  // Effect to handle the timer
-useEffect(() => {
-  let intervalId;
-  // Check if the game has started and not yet over to start the timer
-  if (gameStarted && !gameOver) {
-    // Create a timer that increments the time elapsed every second
-    intervalId = setInterval(() => {
-      setTimeElapsed((prevTime) => prevTime + 1);
-    }, 1000); // 1000 milliseconds = 1 second
-  }
-  // Cleanup function to clear the timer interval when the component unmounts
-  // or when the game is over or not started to prevent memory leaks
-  return () => clearInterval(intervalId);
-}, [gameStarted, gameOver]); // This effect depends on gameStarted and gameOver states
 
-
-const checkGameCompletion = () => {
-  if (isLuckyPunkMode) {
-    // In "Feeling Lucky, Punk" mode, completion might be based solely on revealing non-mine cells.
-    for (let row of gridData) {
-      for (let cell of row) {
-        // If there's a non-mine cell that hasn't been revealed, the game is not complete.
-        if (!cell.isMine && !cell.isRevealed) {
-          return false; // Game is not complete, as there are still safe cells to reveal.
+  const checkGameCompletion = () => {
+    if (isLuckyPunkMode) {
+      // In "Feeling Lucky, Punk" mode, completion might be based solely on revealing non-mine cells.
+      for (let row of gridData) {
+        for (let cell of row) {
+          // If there's a non-mine cell that hasn't been revealed, the game is not complete.
+          if (!cell.isMine && !cell.isRevealed) {
+            return false; // Game is not complete, as there are still safe cells to reveal.
+          }
         }
       }
-    }
-    return true; // All non-mine cells have been revealed, game is complete.
-  } else {
-    // For normal mode, you might still check both conditions: mines flagged and non-mine cells revealed.
-    let mineCellsFlagged = true; // Assume all mines are correctly flagged initially
-    let nonMineCellsRevealed = true; // Assume all non-mine cells are revealed initially
-
-    for (let row of gridData) {
-      for (let cell of row) {
-        if (cell.isMine && !cell.isFlagged) {
-          mineCellsFlagged = false; // A mine is not flagged.
-        }
-        if (!cell.isMine && !cell.isRevealed) {
-          nonMineCellsRevealed = false; // A non-mine cell is not revealed.
+      return true; // All non-mine cells have been revealed, game is complete.
+    } else {
+      // For normal mode, you might still check both conditions: mines flagged and non-mine cells revealed.
+      let mineCellsFlagged = true; // Assume all mines are correctly flagged initially
+      let nonMineCellsRevealed = true; // Assume all non-mine cells are revealed initially
+  
+      for (let row of gridData) {
+        for (let cell of row) {
+          if (cell.isMine && !cell.isFlagged) {
+            mineCellsFlagged = false; // A mine is not flagged.
+          }
+          if (!cell.isMine && !cell.isRevealed) {
+            nonMineCellsRevealed = false; // A non-mine cell is not revealed.
+          }
         }
       }
+      return mineCellsFlagged && nonMineCellsRevealed; // Both conditions must be true for the game to be complete.
     }
-    return mineCellsFlagged && nonMineCellsRevealed; // Both conditions must be true for the game to be complete.
-  }
-};
-
+  };
+  
 
   const handleCellPress = (rowIndex, cellIndex) => {
-    // Only allow cell press if it's the 'Feeling Lucky, Punk' mode and the game hasn't started yet
     if (isLuckyPunkMode) {
       if (!gameStarted) {
-      setGameStarted(true); // Start the game
+        setGameStarted(true);
       }
       if (gameOver) return;
-      const { grid, gameOver: isGameOver } = revealCell(gridData, rowIndex, cellIndex, true); // true to indicate no hints
-        if (isGameOver) {
-          
-          // If a mine is hit, game over
-          Alert.alert("Boom!", "You hit a mine!", [{ text: "OK" }]);
-          setIsLuckyPunkMode(true);
-          setGameOver(true); // Set game over
-          setGameStarted(false); // End the game
-          setScore(timeElapsed);
-        } else {
-          // If a safe cell is revealed, increment the score
-          setScore((prevScore) => prevScore + 2); 
-          if (!gameOver && checkGameCompletion()) {
-            Alert.alert("Congratulations", `You've won the game! Your final score is: ${score}`, [{ text: "OK" }]);
-            setGameOver(true);
-          }
-          setIsLuckyPunkMode(true); // Player can only uncover one cell, so end the mode
-          setGameOver(false); // End the game - if true game ends on first click
+
+      const { grid, gameOver: isGameOver } = revealCell(gridData, rowIndex, cellIndex, true);
+      if (isGameOver) {
+        handleEndGameAlert(false);
+        setIsLuckyPunkMode(false);
+
+      } else {
+        if (!gameOver) { // Ensure the game is not over before updating the score
+          setScore((prevScore) => prevScore + 5);
         }
+        if (checkGameCompletion()) {
+          handleEndGameAlert(true);
+        }
+      }
       setGridData(grid);
     } else {
       if (!gameStarted) {
-        setGameStarted(true); // Start the game on the first cell press
+        setGameStarted(true);
       }
       if (gameOver) return;
+
       const { grid, gameOver: isGameOver } = revealCell(gridData, rowIndex, cellIndex);
       setGridData(grid);
       if (isGameOver) {
-        Alert.alert("Game Over", "You hit a mine!", [{ text: "OK" }]);
-        setGameOver(true);
-      }
-      if (!gameOver && checkGameCompletion()) {
-        Alert.alert("Congratulations", "You've won the game!", [{ text: "OK" }]);
-        setGameOver(true);
+        handleEndGameAlert(false);
+      } else if (checkGameCompletion()) {
+        handleEndGameAlert(true);
       }
     }
   };
-
+  
+ 
   const handleCellLongPress = (rowIndex, cellIndex) => {
     if (gameOver) return;
     const { grid, flagAdded } = toggleFlag(gridData, rowIndex, cellIndex);
     setGridData(grid);
     setMineCount(prevCount => prevCount + (flagAdded ? -1 : 1));
     if (!gameOver && checkGameCompletion()) {
-      Alert.alert("Congratulations", "You've won the game!", [{ text: "OK" }]);
+      handleEndGameAlert(true);
       setGameOver(true);
     }
   };
 
   const handleDifficultyChange = (difficulty) => {
     setCurrentDifficulty(difficulty);
-    // Reset the game to initial parameters when changing difficulty, especially coming from Lucky Punk Mode
+    // resetGame(); // Reset the game parameters
     setGridData(initializeGrid(difficulty.GRID_X, difficulty.GRID_Y, difficulty.MINES_COUNT));
-    setIsLuckyPunkMode(false); // Ensure we exit Lucky Punk mode when changing difficulty
+    setIsLuckyPunkMode(false);
     setGameOver(false);
     setGameStarted(false);
     setTimeElapsed(0);
     setMineCount(difficulty.MINES_COUNT);
-    setScore(0); // Reset score for good measure, though score is not used outside Lucky Punk Mode
+    setScore(0);
   };
-  
-
-
-  
 
   return (
     <View style={styles.container}>
-  
       <StatusBar mineCount={mineCount} timeElapsed={timeElapsed} />
       <View style={styles.difficultySelector}>
         <TouchableOpacity
@@ -178,47 +209,42 @@ const checkGameCompletion = () => {
           style={[styles.difficultyButton, currentDifficulty === HARD && styles.selectedDifficulty]}
           onPress={() => handleDifficultyChange(HARD)}
         >
-          <Text style={styles.difficultyText}>Hard</Text>          
+          <Text style={styles.difficultyText}>Hard</Text>
         </TouchableOpacity>
         {/* Toggle Feeling Lucky, Punk Mode */}
         {!isLuckyPunkMode && (
           <Button title="Feeling Lucky, Punk" onPress={startLuckyPunkMode} />
         )}
-        
       </View>
-      <Grid 
+
+      {gameOver && <Text style={styles.gameOverText}>Game Over</Text>}
+      {isLuckyPunkMode && (
+        <Button title="Stop" onPress={handleStopPress} disabled={stopButtonDisabled} />
+      )}
+      <Grid
         gridData={gridData}
         tableWidth={currentDifficulty.GRID_Y}
         onCellPress={handleCellPress}
-        onCellLongPress={handleCellLongPress} 
+        onCellLongPress={handleCellLongPress}
+        gameOver={gameOver} // Pass gameOver state to Grid component
       />
-      {gameOver && <Text style={styles.gameOverText}>Game Over</Text>}
-      {/* Show Stop only in Lucky Punk Mode */}
-      {isLuckyPunkMode && (
-        <Button title="Stop/Reset" onPress={handleStopPress} />
+      {isLuckyPunkMode ? (
+        <View style={styles.instructions}>
+          <Text style={styles.instructionText1}>Feeling Lucky, Punk Mode:</Text>
+          <Text style={styles.instructionText}>1- Tap a cell to start timer.</Text>
+          <Text style={styles.instructionText}>2 - Try to reveal as many cells as possible without hitting a mine.</Text>
+          <Text style={styles.instructionText}>3 - Press "Stop" when you're happy with your score.</Text>
+        </View>
+      ) : (
+        <View style={styles.instructions}>
+          <Text style={styles.instructionText}>1 - Select a difficulty to start / restart the game.</Text>
+          <Text style={styles.instructionText}>2 - Tap a cell to reveal it.</Text>
+          <Text style={styles.instructionText}>3 - Long press to flag / unflag suspected cell mine.</Text>
+          <Text style={styles.instructionText}>4 - Clear all non-mine cells to win.</Text>
+        </View>
       )}
-      
-       {/* Conditional rendering of instructions */}
-    {isLuckyPunkMode ? (
-      <View style={styles.instructions}>
-        <Text style={styles.instructionText1}>Feeling Lucky, Punk Mode:</Text>
-        <Text style={styles.instructionText}>1- Tap a cell to reveal it.</Text>
-        <Text style={styles.instructionText}>2 - Try to reveal as many cells as possible without hitting a mine.</Text>
-        <Text style={styles.instructionText}>3 - Press "Stop" when you're happy with your score.</Text>
-        <Text style={styles.instructionText}>4 - Press "exit" if you hit a bomb.</Text>
-      </View>
-    ) : (
-      <View style={styles.instructions}>
-        <Text style={styles.instructionText}>1 - Select a difficulty to start or restart the game.</Text>
-        <Text style={styles.instructionText}>2 - Tap a cell to reveal it.</Text>
-        <Text style={styles.instructionText}>3 - Long press to place a flag on suspected mines.</Text>
-        <Text style={styles.instructionText}>4 - Clear all non-mine cells to win.</Text>
-      </View>
-    )}
-  
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
