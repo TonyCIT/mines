@@ -1,28 +1,25 @@
-// Function to initialize the grid with mines and calculate adjacent mines
 export const initializeGrid = (rows, cols, mines, noHints = false) => {
-  // Create an empty grid with specified dimensions and initialize each cell with default values
   const grid = new Array(rows).fill(null).map(() => 
     new Array(cols).fill(null).map(() => ({
-      isMine: false, // Whether the cell contains a mine
-      isRevealed: false, // Whether the cell is revealed
-      isFlagged: false, // Whether the cell is flagged by the player
-      adjacentMines: 0 // Number of adjacent cells containing mines
+      isMine: false, 
+      isRevealed: false, 
+      isFlagged: false, 
+      adjacentMines: 0
     }))
   );
 
-  // Place mines randomly on the grid
   let minesPlaced = 0;
   while (minesPlaced < mines) {
     const row = Math.floor(Math.random() * rows);
     const col = Math.floor(Math.random() * cols);
 
     if (!grid[row][col].isMine) {
-      grid[row][col].isMine = true; // Set the cell as a mine
+      grid[row][col].isMine = true;
       minesPlaced++;
     }
   }
 
-  // Calculate adjacent mines for each cell if hints are enabled
+  // Calculate adjacent mines for each cell
   if (!noHints) {
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
@@ -37,39 +34,43 @@ export const initializeGrid = (rows, cols, mines, noHints = false) => {
               }
             }
           }
-          grid[r][c].adjacentMines = count; // Set the number of adjacent mines for the cell
+          grid[r][c].adjacentMines = count;
         }
       }
     }
   }
-
-  // Log the final grid to the console
+    // shows the "game" in the terminal
   console.log('Final grid:', grid.map(row => row.map(cell => cell.isMine ? 'M' : '0').join(' ')).join('\n'));
-  return grid; // Return the initialized grid
+  return grid;
 };
 
-// Function to reveal a cell on the grid
+  
+  
 export const revealCell = (grid, row, col, noHints = false) => {
   // Copy the grid to avoid mutating the state directly
   const newGrid = grid.map(row => row.slice());
 
-  // If hints are disabled, reveal the cell without checking for adjacent mines
+  // If in Feeling Lucky Punk mode, set noRecursiveReveal to true
   const noRecursiveReveal = noHints;
   
+  // Directly reveal the cell without checking for adjacent mines if noHints is true
   if (noRecursiveReveal) {
     if (!newGrid[row][col].isRevealed) {
-      newGrid[row][col].isRevealed = true; // Set the cell as revealed
+      newGrid[row][col].isRevealed = true;
+      // If the cell is a mine, then it's game over
       if (newGrid[row][col].isMine) {
-        return { grid: newGrid, gameOver: true }; // Game over if a mine is revealed
+        return { grid: newGrid, gameOver: true };
       }
     }
-    return { grid: newGrid, gameOver: false }; // Return updated grid and indicate game is not over
+    // Return the updated grid and that the game is not over
+    return { grid: newGrid, gameOver: false };
   } else {
-    return revealCellHelper(newGrid, row, col, true, noRecursiveReveal); // Continue with normal cell revealing logic
+    // Keep the existing logic that handles revealing cells normally
+    return revealCellHelper(newGrid, row, col, true, noRecursiveReveal);
   }
 };
 
-// Helper function to recursively reveal adjacent cells
+
 function revealCellHelper(grid, row, col, firstCall = true, noRecursiveReveal = false) {
   const cell = grid[row][col];
   
@@ -78,17 +79,20 @@ function revealCellHelper(grid, row, col, firstCall = true, noRecursiveReveal = 
     return { grid, gameOver: false };
   }
 
-  cell.isRevealed = true; // Set the cell as revealed
+  cell.isRevealed = true;
 
+  // If mine is revealed on first call, game is over
   if (firstCall && cell.isMine) {
-    return { grid, gameOver: true }; // Game over if the first revealed cell is a mine
+    return { grid, gameOver: true };
   }
 
+  // If no adjacent mines and recursive reveal is allowed, recursively reveal adjacent cells
   if (!noRecursiveReveal && cell.adjacentMines === 0) {
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         const adjRow = row + i;
         const adjCol = col + j;
+        // Skip the original cell, out-of-bounds locations, and cells that are already revealed or are mines
         if ((i !== 0 || j !== 0) && 
             adjRow >= 0 && adjRow < grid.length &&
             adjCol >= 0 && adjCol < grid[0].length) {
@@ -100,8 +104,8 @@ function revealCellHelper(grid, row, col, firstCall = true, noRecursiveReveal = 
 
   return { grid, gameOver: false };
 }
-
-// Function to toggle the flag on a cell
+  
+  // New function to toggle the flag on a cell
 export const toggleFlag = (grid, row, col) => {
   const newGrid = [...grid];
   const cell = newGrid[row][col];
