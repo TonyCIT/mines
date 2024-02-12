@@ -56,6 +56,7 @@ export const revealCell = (grid, row, col, noHints = false) => {
     }
   };
 
+  
 
 {/* Always show the "Reset Game" button only in normal mode */}
       {!isLuckyPunkMode && (
