@@ -12,10 +12,9 @@ const StatusBar = ({ mineCount, timeElapsed }) => {
 
   return (
     <View style={styles.statusBar}>
-      {/* Remove the nested Text component for Mines */}
-      <Text>Mines: {mineCount}</Text>
-      {/* Time is already correctly formatted */}
-      <Text>Time: {formatTime(timeElapsed)}</Text>
+      {/* Use a single Text component to display both mine count and time */}
+      <Text style={[styles.text, styles.mineCount]}>Mines: {mineCount}</Text>
+      <Text style={[styles.text, styles.timeElapsed]}>Time: {formatTime(timeElapsed)}</Text>
     </View>
   );
 };
@@ -23,11 +22,22 @@ const StatusBar = ({ mineCount, timeElapsed }) => {
 const styles = StyleSheet.create({
   statusBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: 10,
     backgroundColor: '#fff',
     width: '100%',
     alignItems: 'center',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  mineCount: {
+    marginRight: 'auto',
+  },
+  timeElapsed: {
+    marginLeft: 'auto', 
   },
 });
 
