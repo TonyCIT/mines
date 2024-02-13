@@ -5,7 +5,7 @@
 // Difficulty levels 
 export const EASY = { GRID_X: 10, GRID_Y: 10, MINES_COUNT: 10, label: 'Easy' };
 export const MEDIUM = { GRID_X: 15, GRID_Y: 13, MINES_COUNT: 25, label: 'Medium' };
-export const HARD = { GRID_X: 17, GRID_Y: 14, MINES_COUNT: 45, label: 'Hard' };
+export const HARD = { GRID_X: 18, GRID_Y: 14, MINES_COUNT: 45, label: 'Hard' };
 // feeling lucky punk
 export const LUCKY_PUNK = { GRID_SIZE: 5, MINES_COUNT: 3 };
 

@@ -37,11 +37,13 @@ const Grid = ({ gridData, onCellPress, onCellLongPress }) => {
 
 const styles = StyleSheet.create({
   grid: {
-    padding: gridPadding,
-    backgroundColor: '#ffffff',
+    padding: 2,
+    borderColor: '#ffffff', // Set the border color of the grid
+    // Add border width for the grid
   },
   row: {
     flexDirection: 'row',
+    borderWidth: 0.3,
   },
 });
 
