@@ -22,6 +22,8 @@ const App = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [playerName, setPlayerName] = useState('');
+  const [tempScore, setTempScore] = useState(null); // Temporary score state
+
 
   const addScore = (newScore, playerName, isLuckyMode) => {
     const modeScores = isLuckyMode ? [...luckyScores] : [...normalScores];
@@ -57,6 +59,7 @@ const App = () => {
   };
 
   const handleStopPress = () => {
+    // setNameModalVisible(true);
     handleEndGameAlert(true);
     setIsLuckyPunkMode(false);
     setScore(0);
@@ -74,7 +77,7 @@ const App = () => {
     }
     return () => clearInterval(intervalId);
   }, [gameStarted, gameOver]);
-
+  
   const handleEndGameAlert = (win) => {
     if (win) {
       let finalScore;
@@ -86,32 +89,32 @@ const App = () => {
       finalScore = Math.abs(finalScore);
   
       setGameOver(true);
-      addScore(finalScore, top3Name, isLuckyPunkMode); // Save the score when the game ends
+  
+      // Determine if the score qualifies as a top 3 score before showing the name input modal
+      const currentScores = isLuckyPunkMode ? luckyScores : normalScores;
+      const sortedScores = [...currentScores, { score: finalScore, name: '' }].sort((a, b) => b.score - a.score);
+      const isInTop3 = sortedScores.findIndex(scoreEntry => scoreEntry.score === finalScore) < 3;
+  
+      if (isInTop3) {
+        setTempScore({ score: finalScore, isLuckyMode: isLuckyPunkMode }); // Temporarily save the score
+        setNameModalVisible(true); // Show the name input modal only if the score is in the top 3
+      } else {
+        // If the score isn't in the top 3, add it directly without asking for a name
+        addScore(finalScore, "Anonymous", isLuckyPunkMode);
+      }
   
       if (isLuckyPunkMode) {
-        if (luckyScores.find(entry => entry.score === finalScore)) {
-          setNameModalVisible(true);
-        } else {
-          Alert.alert(
-            "Congratulations",
-            `You've won the game! Your final score is: ${finalScore}`,
-            [
-              { text: "OK", onPress: () => startLuckyPunkMode() }
-            ]
-          );
-        }
+        Alert.alert(
+          "Congratulations",
+          `You've won the game! Your final score is: ${finalScore}`,
+          [{ text: "OK", onPress: () => startLuckyPunkMode() }]
+        );
       } else {
-        if (normalScores.find(entry => entry.score === finalScore)) {
-          setNameModalVisible(true);
-        } else {
-          Alert.alert(
-            "Congratulations",
-            `You've won the game! Your final score is: ${finalScore}`,
-            [
-              { text: "OK" }
-            ]
-          );
-        }
+        Alert.alert(
+          "Congratulations",
+          `You've won the game! Your final score is: ${finalScore}`,
+          [{ text: "OK" }]
+        );
       }
     } else {
       setScore(0);
@@ -119,6 +122,7 @@ const App = () => {
       Alert.alert("Boom!", "You hit a mine! Score reset to 0", [{ text: "OK" }]);
     }
   };
+  
   
 
   const checkGameCompletion = () => {
@@ -209,9 +213,14 @@ const App = () => {
   };
 
   const handleNameSave = (name) => {
-    setTop3Name(name);
-    setNameModalVisible(false);
+    setTop3Name(name); // Save the entered name
+    if (tempScore) { // Check if there's a score waiting to be submitted
+      addScore(tempScore.score, name, tempScore.isLuckyMode); // Submit the score with the newly entered name
+      setTempScore(null); // Clear the temporary score as it's been processed
+    }
+    setNameModalVisible(false); // Hide the name entry modal
   };
+  
 
   return (
     <View style={styles.container}>
@@ -259,11 +268,11 @@ const App = () => {
         <Text>Top 3 Scores:</Text>
         {isLuckyPunkMode ? (
           luckyScores.map((scoreEntry, index) => (
-            <Text key={index}>{`Score: ${scoreEntry.score} - Name: ${scoreEntry.name}`}</Text>
+            <Text key={index}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
           ))
         ) : (
           normalScores.map((scoreEntry, index) => (
-            <Text key={index}>{`Score: ${scoreEntry.score} - Name: ${scoreEntry.name}`}</Text>
+            <Text key={index}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
           ))
         )}
       </View>
