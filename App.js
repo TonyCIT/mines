@@ -254,7 +254,7 @@ const addScore = (newScore, playerName, isLuckyMode) => {
           <Text style={styles.difficultyText}>{HARD.label}</Text>
         </TouchableOpacity>
         {!isLuckyPunkMode && (
-          <Button title="Feeling Lucky, Punk" onPress={startLuckyPunkMode} />
+          <Button title="Lucky" onPress={startLuckyPunkMode} />
         )}
       </View>
 
@@ -288,7 +288,7 @@ const addScore = (newScore, playerName, isLuckyMode) => {
 
       {isLuckyPunkMode ? (
         <View style={styles.instructions}>
-          <Text style={styles.instructionText1}>Feeling Lucky, Punk Mode:</Text>
+          <Text style={styles.instructionText1}>Feeling Lucky Mode:</Text>
           <Text style={styles.instructionText}>1- Tap a cell to start timer.</Text>
           <Text style={styles.instructionText}>2 - Try to reveal as many cells as possible without hitting a mine.</Text>
           <Text style={styles.instructionText}>3 - Press "Stop" when you're happy with your score.</Text>
@@ -308,49 +308,82 @@ const addScore = (newScore, playerName, isLuckyMode) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'gainsboro',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start', // Align content at the top
     padding: 20,
+    marginTop: 10,
+    paddingBottom: 50, // Add padding bottom to accommodate instructions
   },
   gameOverText: {
     fontSize: 24,
     color: 'red',
-    margin: 10,
+    marginVertical: 10,
+    fontWeight: 'bold',
+    alignSelf: 'center', // Center the text horizontally
   },
   difficultySelector: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginVertical: 10,
+    marginBottom: 10,
   },
   difficultyButton: {
-    backgroundColor: '#ccc',
-    padding: 10,
+    backgroundColor: 'dodgerblue',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     marginHorizontal: 5,
-    borderRadius: 5,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'dodgerblue',
   },
   selectedDifficulty: {
-    backgroundColor: '#007bff',
+    backgroundColor: 'dodgerblue',
+    borderWidth: 2,
+    borderColor: 'dodgerblue',
   },
   difficultyText: {
-    color: '#fff',
+    color: 'white',
     fontWeight: 'bold',
+    fontSize: 14,
   },
   instructions: {
-    padding: 8,
+    position: 'absolute',
+    bottom: 20, // Adjust this value to change the distance from the bottom
+    left: 0,
+    right: 0,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'dimgray',
+    borderRadius: 10,
+    backgroundColor: 'white',
   },
   instructionText: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: 12,
+    color: 'dimgray',
     textAlign: 'center',
+    marginBottom: 5,
   },
   instructionText1: {
     fontSize: 14,
     color: 'red',
     textAlign: 'center',
+    marginBottom: 5,
+  },
+  statusBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: 'white',
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 10, // Add margin top to separate from the difficulty selector
   },
 });
+
+
+
+
 
 export default App;
