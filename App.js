@@ -30,20 +30,20 @@ const App = () => {
   const [tempScore, setTempScore] = useState(null); // Temporary score state
 
   // Simplify the addScore function to work correctly for both lucky and normal modes.
-const addScore = (newScore, playerName, isLuckyMode) => {
-  if (isLuckyMode) {
-    const updatedScores = [...luckyScores, { score: newScore, name: playerName }].sort((a, b) => b.score - a.score).slice(0, 3);
-    setLuckyScores(updatedScores);
-  } else {
-    // Update normalScores for the current difficulty.
-    const difficultyKey = currentDifficulty.label;
-    const updatedScores = [...(normalScores[difficultyKey] || []), { score: newScore, name: playerName }].sort((a, b) => b.score - a.score).slice(0, 3);
-    setNormalScores(prevScores => ({
-      ...prevScores,
-      [difficultyKey]: updatedScores,
-    }));
-  }
-};
+  const addScore = (newScore, playerName, isLuckyMode) => {
+    if (isLuckyMode) {
+      const updatedScores = [...luckyScores, { score: newScore, name: playerName }].sort((a, b) => b.score - a.score).slice(0, 3);
+      setLuckyScores(updatedScores);
+    } else {
+      // Update normalScores for the current difficulty.
+      const difficultyKey = currentDifficulty.label;
+      const updatedScores = [...(normalScores[difficultyKey] || []), { score: newScore, name: playerName }].sort((a, b) => a.score - b.score).slice(0, 3);
+      setNormalScores(prevScores => ({
+        ...prevScores,
+        [difficultyKey]: updatedScores,
+      }));
+    }
+  };
   
   const addLuckyScore = (newScore, playerName) => {
     const updatedScores = [...luckyScores, { score: newScore, name: playerName }];
@@ -254,15 +254,14 @@ const addScore = (newScore, playerName, isLuckyMode) => {
           <Text style={styles.difficultyText}>{HARD.label}</Text>
         </TouchableOpacity>
         {!isLuckyPunkMode && (
-          <TouchableOpacity style={styles.luckyButton} onPress={startLuckyPunkMode}>
+          <TouchableOpacity 
+            style={styles.luckyButton} onPress={startLuckyPunkMode}
+            >
             <Text style={styles.luckyButtonText}>Lucky</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {isLuckyPunkMode && (
-        <Button title="Stop" onPress={handleStopPress} disabled={stopButtonDisabled} />
-      )}
       <Grid
         gridData={gridData}
         tableWidth={currentDifficulty.GRID_Y}
@@ -274,25 +273,35 @@ const addScore = (newScore, playerName, isLuckyMode) => {
         visible={nameModalVisible} 
         onSave={handleNameSave} 
       />
-      <View>
-        <Text>Top 3 Scores:</Text>
+      {isLuckyPunkMode && (
+        <TouchableOpacity 
+          style={[styles.stopButton, stopButtonDisabled ? null : styles.stopButtonActive]} 
+          onPress={handleStopPress} 
+          disabled={stopButtonDisabled}
+        >
+          <Text style={styles.stopButtonText}>Stop</Text>
+        </TouchableOpacity>
+      )}
+      <View style={styles.topScores}>
+        <Text style={styles.topScoresText}>Top 3 Scores:</Text>
         {isLuckyPunkMode ? (
           luckyScores.map((scoreEntry, index) => (
-            <Text key={index}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
+            <Text key={index} style={styles.scoreEntryText}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
           ))
         ) : (
-          normalScores[currentDifficulty.label] || []).map((scoreEntry, index) => (
-            <Text key={index}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
-          )
+          (normalScores[currentDifficulty.label] || []).map((scoreEntry, index) => (
+            <Text key={index} style={styles.scoreEntryText}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
+          )).reverse() // Reverse the order for normal mode
         )}
       </View>
+
 
       {isLuckyPunkMode ? (
         <View style={styles.instructions}>
           <Text style={styles.instructionText1}>Feeling Lucky Mode:</Text>
           <Text style={styles.instructionText}>1- Tap a cell to start timer.</Text>
-          <Text style={styles.instructionText}>2 - Try to reveal as many cells as possible without hitting a mine.</Text>
-          <Text style={styles.instructionText}>3 - Press "Stop" when you're happy with your score.</Text>
+          <Text style={styles.instructionText}>2 - Reveal cells without hitting a mine.</Text>
+          <Text style={styles.instructionText}>3 - Press "Stop" if you are happy with your score.</Text>
         </View>
       ) : (
         <View style={styles.instructions}>
@@ -309,17 +318,11 @@ const addScore = (newScore, playerName, isLuckyMode) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0', // Soft gray background for a neutral look
+    backgroundColor: '#E6E0F0', // Soft gray background for a neutral look
     alignItems: 'center',
     justifyContent: 'flex-start', // Start aligning items from the top
     padding: 20,
     paddingTop: 27, // Additional padding at the top for aesthetic spacing
-  },
-  gameOverText: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#D32F2F', // Red accent for the game-over text to catch attention
-    margin: 0.1,
   },
   difficultySelector: {
     flexDirection: 'row',
@@ -328,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   difficultyButton: {
-    marginTop: 1,
+    marginTop: 3,
     backgroundColor: '#1976D2', // Gold color for the lucky button
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -337,7 +340,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFEB3B',
   },
   selectedDifficulty: {
-    borderColor: '#FFEB3B', // Highlight selected difficulty with a yellow border
+    borderColor: 'red', // Highlight selected difficulty with a yellow border
   },
   difficultyText: {
     color: '#ffffff',
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
     textAlign: 'center', // Center align the text within the button
   },
   luckyButton: {
-    marginTop: 1,
+    marginTop: 3,
     backgroundColor: '#FFD700', // Gold color for the lucky button
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -358,53 +361,56 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
   },
+  stopButton: {
+    marginTop: 1,
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: 'center',
+    borderColor: 'red', // Color for inactive state
+    backgroundColor: 'lightgray', // Background color for inactive state
+    marginBottom: 10,
+  },
+  stopButtonText: {
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  stopButtonActive: {
+    borderColor: 'green', // Color for active state
+    backgroundColor: 'lightgreen', // Background color for active state
+  },
   instructions: {
     position: 'absolute',
-    bottom: 20, // Lock instructions at the bottom
+    bottom: 2, // Lock instructions at the bottom
     left: 20, // Add left margin for aesthetic spacing
     right: 20, // Add right margin for aesthetic spacing
     backgroundColor: '#ECEFF1', // Light background for instructions for subtlety
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#B0BEC5', // A light grey border for definition
+    borderColor: '#1976D2', // A light grey border for definition
   },
   instructionText: {
     color: '#455A64', // Darker text color for contrast against the light background
     fontSize: 14, // Clear, readable font size
+    textAlign: 'left',
+    lineHeight: 18, // Line height for better readability in paragraphs
+  },
+  instructionText1: {
+    fontSize: 14,
+    color: 'red',
     textAlign: 'center',
-    lineHeight: 20, // Line height for better readability in paragraphs
   },
   instructionTitle: {
     fontWeight: 'bold',
-    marginBottom: 5,
   },
-  stopButton: {
-    marginTop: 10, // Spacing from the top element
-    backgroundColor: '#D32F2F', // Use red to indicate a stop action
-    padding: 10,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-  stopButtonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
-  disabledButton: {
-    backgroundColor: '#BDBDBD', // A grey out color for disabled state
-  },
-  gameDifficulty: {
-    fontSize: 18,
-    color: '#1976D2', // Matching the button colors for consistency
-    fontWeight: 'bold',
-    marginVertical: 20, // Space around the difficulty display
+  topScores: {
+    marginTop: 1, // Add top margin for separation from other elements
   },
   topScoresText: {
     fontSize: 16,
     color: '#388E3C', // Green for a positive, high-score vibe
     fontWeight: 'bold',
-    marginBottom: 10, // Space above the scores list
   },
   scoreEntryText: {
     fontSize: 14,

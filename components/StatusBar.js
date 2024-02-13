@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: '107%',
     alignItems: 'center',
-     // Lock the statusBar at the top with a 10 margin
+    marginTop: 10, // Lock the statusBar at the top with a 10 margin
   },
   text: {
     fontSize: 14,
@@ -39,6 +39,12 @@ const styles = StyleSheet.create({
   },
   timeElapsed: {
     marginLeft: 'auto', 
+  },
+  gameOver: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'red', // Red accent for the game-over text to catch attention
+    margin: 0.1,
   },
 });
 

@@ -67,9 +67,6 @@ const styles = StyleSheet.create({
   revealed: {
     backgroundColor: '#bdbdbd',
   },
-  flagged: {
-    // Add any specific style for flagged cells
-  },
 });
 
 export default Cell;

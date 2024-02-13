@@ -15,7 +15,7 @@ const NameInputModal = ({ visible, onSave }) => {
         <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10 }}>
           <TextInput
             style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, padding: 5 }}
-            placeholder="Enter your name"
+            placeholder="Chicken's Name Please"
             value={name}
             onChangeText={setName}
           />
