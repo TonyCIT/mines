@@ -233,7 +233,7 @@ const addScore = (newScore, playerName, isLuckyMode) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar mineCount={mineCount} timeElapsed={timeElapsed} />
+      <StatusBar mineCount={mineCount} timeElapsed={timeElapsed} gameOver={gameOver} />
       <View style={styles.difficultySelector}>
         <TouchableOpacity
           style={[styles.difficultyButton, currentDifficulty === EASY && styles.selectedDifficulty]}
@@ -254,11 +254,12 @@ const addScore = (newScore, playerName, isLuckyMode) => {
           <Text style={styles.difficultyText}>{HARD.label}</Text>
         </TouchableOpacity>
         {!isLuckyPunkMode && (
-          <Button title="Lucky" onPress={startLuckyPunkMode} />
+          <TouchableOpacity style={styles.luckyButton} onPress={startLuckyPunkMode}>
+            <Text style={styles.luckyButtonText}>Lucky</Text>
+          </TouchableOpacity>
         )}
       </View>
 
-      {gameOver && <Text style={styles.gameOverText}>Game Over</Text>}
       {isLuckyPunkMode && (
         <Button title="Stop" onPress={handleStopPress} disabled={stopButtonDisabled} />
       )}
@@ -308,82 +309,108 @@ const addScore = (newScore, playerName, isLuckyMode) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'gainsboro',
+    backgroundColor: '#f0f0f0', // Soft gray background for a neutral look
     alignItems: 'center',
-    justifyContent: 'flex-start', // Align content at the top
+    justifyContent: 'flex-start', // Start aligning items from the top
     padding: 20,
-    marginTop: 10,
-    paddingBottom: 50, // Add padding bottom to accommodate instructions
+    paddingTop: 27, // Additional padding at the top for aesthetic spacing
   },
   gameOverText: {
-    fontSize: 24,
-    color: 'red',
-    marginVertical: 10,
+    fontSize: 17,
     fontWeight: 'bold',
-    alignSelf: 'center', // Center the text horizontally
+    color: '#D32F2F', // Red accent for the game-over text to catch attention
+    margin: 0.1,
   },
   difficultySelector: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 10,
+    justifyContent: 'space-around',
+    width: '100%', // Utilize full width for spacing out difficulty buttons
+    marginBottom: 20,
   },
   difficultyButton: {
-    backgroundColor: 'dodgerblue',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 5,
-    borderRadius: 10,
+    marginTop: 1,
+    backgroundColor: '#1976D2', // Gold color for the lucky button
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
     borderWidth: 2,
-    borderColor: 'dodgerblue',
+    borderColor: '#FFEB3B',
   },
   selectedDifficulty: {
-    backgroundColor: 'dodgerblue',
-    borderWidth: 2,
-    borderColor: 'dodgerblue',
+    borderColor: '#FFEB3B', // Highlight selected difficulty with a yellow border
   },
   difficultyText: {
-    color: 'white',
+    color: '#ffffff',
+    fontWeight: '600', // Medium font weight for readability
+    fontSize: 16, // Slightly larger text for ease of reading
+    textAlign: 'center', // Center align the text within the button
+  },
+  luckyButton: {
+    marginTop: 1,
+    backgroundColor: '#FFD700', // Gold color for the lucky button
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#1976D2',
+  },
+  luckyButtonText: {
+    color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 14,
   },
   instructions: {
     position: 'absolute',
-    bottom: 20, // Adjust this value to change the distance from the bottom
-    left: 0,
-    right: 0,
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'dimgray',
+    bottom: 20, // Lock instructions at the bottom
+    left: 20, // Add left margin for aesthetic spacing
+    right: 20, // Add right margin for aesthetic spacing
+    backgroundColor: '#ECEFF1', // Light background for instructions for subtlety
+    padding: 15,
     borderRadius: 10,
-    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#B0BEC5', // A light grey border for definition
   },
   instructionText: {
-    fontSize: 12,
-    color: 'dimgray',
+    color: '#455A64', // Darker text color for contrast against the light background
+    fontSize: 14, // Clear, readable font size
     textAlign: 'center',
+    lineHeight: 20, // Line height for better readability in paragraphs
+  },
+  instructionTitle: {
+    fontWeight: 'bold',
     marginBottom: 5,
   },
-  instructionText1: {
-    fontSize: 14,
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  stopButton: {
+    marginTop: 10, // Spacing from the top element
+    backgroundColor: '#D32F2F', // Use red to indicate a stop action
     padding: 10,
-    backgroundColor: 'white',
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 10, // Add margin top to separate from the difficulty selector
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  stopButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#BDBDBD', // A grey out color for disabled state
+  },
+  gameDifficulty: {
+    fontSize: 18,
+    color: '#1976D2', // Matching the button colors for consistency
+    fontWeight: 'bold',
+    marginVertical: 20, // Space around the difficulty display
+  },
+  topScoresText: {
+    fontSize: 16,
+    color: '#388E3C', // Green for a positive, high-score vibe
+    fontWeight: 'bold',
+    marginBottom: 10, // Space above the scores list
+  },
+  scoreEntryText: {
+    fontSize: 14,
+    color: '#455A64', // Dark grey for readability
   },
 });
-
-
-
 
 
 export default App;
