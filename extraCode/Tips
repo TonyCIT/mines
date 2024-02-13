@@ -1,0 +1,10 @@
+{/*
+use 
+    {console.log("Accessing scores for difficulty:", currentDifficulty.label, "Key used:", getScoresKeyByLabel(currentDifficulty.label))}
+as nuch as needed to figure stuff out.
+
+try and make a diagram uf the useState
+same for logic of the game
+
+for "future me" start using class and objects to create this ass long litlle programs.
+*/}

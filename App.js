@@ -17,24 +17,39 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [stopButtonDisabled, setStopButtonDisabled] = useState(true);
   const [luckyScores, setLuckyScores] = useState([]);
-  const [normalScores, setNormalScores] = useState([]);
+  const [normalScores, setNormalScores] = useState({
+    [EASY.label]: [],
+    [MEDIUM.label]: [],
+    [HARD.label]: [],
+  });
+  
   const [top3Name, setTop3Name] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [tempScore, setTempScore] = useState(null); // Temporary score state
 
-
-  const addScore = (newScore, playerName, isLuckyMode) => {
-    const modeScores = isLuckyMode ? [...luckyScores] : [...normalScores];
-    modeScores.push({ score: newScore, name: playerName });
-    modeScores.sort((a, b) => b.score - a.score);
-    const top3Scores = modeScores.slice(0, 3);
-    if (isLuckyMode) {
-      setLuckyScores(top3Scores);
-    } else {
-      setNormalScores(top3Scores);
-    }
+  // Simplify the addScore function to work correctly for both lucky and normal modes.
+const addScore = (newScore, playerName, isLuckyMode) => {
+  if (isLuckyMode) {
+    const updatedScores = [...luckyScores, { score: newScore, name: playerName }].sort((a, b) => b.score - a.score).slice(0, 3);
+    setLuckyScores(updatedScores);
+  } else {
+    // Update normalScores for the current difficulty.
+    const difficultyKey = currentDifficulty.label;
+    const updatedScores = [...(normalScores[difficultyKey] || []), { score: newScore, name: playerName }].sort((a, b) => b.score - a.score).slice(0, 3);
+    setNormalScores(prevScores => ({
+      ...prevScores,
+      [difficultyKey]: updatedScores,
+    }));
+  }
+};
+  
+  const addLuckyScore = (newScore, playerName) => {
+    const updatedScores = [...luckyScores, { score: newScore, name: playerName }];
+    updatedScores.sort((a, b) => b.score - a.score);
+    const top3Scores = updatedScores.slice(0, 3);
+    setLuckyScores(top3Scores);
   };
 
   useEffect(() => {
@@ -59,7 +74,6 @@ const App = () => {
   };
 
   const handleStopPress = () => {
-    // setNameModalVisible(true);
     handleEndGameAlert(true);
     setIsLuckyPunkMode(false);
     setScore(0);
@@ -77,7 +91,7 @@ const App = () => {
     }
     return () => clearInterval(intervalId);
   }, [gameStarted, gameOver]);
-  
+
   const handleEndGameAlert = (win) => {
     if (win) {
       let finalScore;
@@ -87,22 +101,20 @@ const App = () => {
         finalScore = Math.abs(timeElapsed);
       }
       finalScore = Math.abs(finalScore);
-  
+
       setGameOver(true);
-  
-      // Determine if the score qualifies as a top 3 score before showing the name input modal
-      const currentScores = isLuckyPunkMode ? luckyScores : normalScores;
+
+      const currentScores = isLuckyPunkMode ? luckyScores : normalScores[currentDifficulty.label];
       const sortedScores = [...currentScores, { score: finalScore, name: '' }].sort((a, b) => b.score - a.score);
       const isInTop3 = sortedScores.findIndex(scoreEntry => scoreEntry.score === finalScore) < 3;
-  
+
       if (isInTop3) {
-        setTempScore({ score: finalScore, isLuckyMode: isLuckyPunkMode }); // Temporarily save the score
-        setNameModalVisible(true); // Show the name input modal only if the score is in the top 3
+        setTempScore({ score: finalScore, isLuckyMode: isLuckyPunkMode });
+        setNameModalVisible(true);
       } else {
-        // If the score isn't in the top 3, add it directly without asking for a name
-        addScore(finalScore, "Anonymous", isLuckyPunkMode);
+        addLuckyScore(finalScore, "Anonymous", isLuckyPunkMode);
       }
-  
+
       if (isLuckyPunkMode) {
         Alert.alert(
           "Congratulations",
@@ -122,8 +134,6 @@ const App = () => {
       Alert.alert("Boom!", "You hit a mine! Score reset to 0", [{ text: "OK" }]);
     }
   };
-  
-  
 
   const checkGameCompletion = () => {
     if (isLuckyPunkMode) {
@@ -213,14 +223,13 @@ const App = () => {
   };
 
   const handleNameSave = (name) => {
-    setTop3Name(name); // Save the entered name
-    if (tempScore) { // Check if there's a score waiting to be submitted
-      addScore(tempScore.score, name, tempScore.isLuckyMode); // Submit the score with the newly entered name
-      setTempScore(null); // Clear the temporary score as it's been processed
+    setTop3Name(name);
+    if (tempScore) {
+      addScore(tempScore.score, name, tempScore.isLuckyMode);
+      setTempScore(null);
     }
-    setNameModalVisible(false); // Hide the name entry modal
+    setNameModalVisible(false);
   };
-  
 
   return (
     <View style={styles.container}>
@@ -230,19 +239,19 @@ const App = () => {
           style={[styles.difficultyButton, currentDifficulty === EASY && styles.selectedDifficulty]}
           onPress={() => handleDifficultyChange(EASY)}
         >
-          <Text style={styles.difficultyText}>Easy</Text>
+          <Text style={styles.difficultyText}>{EASY.label}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.difficultyButton, currentDifficulty === MEDIUM && styles.selectedDifficulty]}
           onPress={() => handleDifficultyChange(MEDIUM)}
         >
-          <Text style={styles.difficultyText}>Medium</Text>
+          <Text style={styles.difficultyText}>{MEDIUM.label}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.difficultyButton, currentDifficulty === HARD && styles.selectedDifficulty]}
           onPress={() => handleDifficultyChange(HARD)}
         >
-          <Text style={styles.difficultyText}>Hard</Text>
+          <Text style={styles.difficultyText}>{HARD.label}</Text>
         </TouchableOpacity>
         {!isLuckyPunkMode && (
           <Button title="Feeling Lucky, Punk" onPress={startLuckyPunkMode} />
@@ -271,11 +280,12 @@ const App = () => {
             <Text key={index}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
           ))
         ) : (
-          normalScores.map((scoreEntry, index) => (
+          normalScores[currentDifficulty.label] || []).map((scoreEntry, index) => (
             <Text key={index}>{`Score: ${scoreEntry.score}  Name: ${scoreEntry.name}`}</Text>
-          ))
+          )
         )}
       </View>
+
       {isLuckyPunkMode ? (
         <View style={styles.instructions}>
           <Text style={styles.instructionText1}>Feeling Lucky, Punk Mode:</Text>
